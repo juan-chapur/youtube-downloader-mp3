@@ -24,8 +24,8 @@ Este proyecto permite descargar audios de videos de YouTube en formato `.mp3`.
 
 Clona este repositorio en tu máquina local:
 ```bash
-git clone https://github.com/tu-usuario/youtube-audio-downloader.git
-cd youtube-audio-downloader
+git clone https://github.com/juan-chapur/youtube-downloader-mp3.git
+cd youtube-downloader-mp3
 ```
 
 ### 2. Crear las carpetas necesarias
