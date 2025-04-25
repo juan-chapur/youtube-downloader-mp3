@@ -28,22 +28,13 @@ git clone https://github.com/juan-chapur/youtube-downloader-mp3.git
 cd youtube-downloader-mp3
 ```
 
-### 2. Crear las carpetas necesarias
-
-Crea las carpetas `input` y `output`:
-```bash
-mkdir input output
-```
-
-### 3. Agregar enlaces de YouTube
+### 2. Agregar enlaces de YouTube
 
 En la carpeta `input`, crea un archivo llamado `input.txt` y agrega los enlaces de YouTube, uno por línea. Por ejemplo:
 ```txt
 https://www.youtube.com/watch?v=fYxYe2Ug2os
 https://www.youtube.com/watch?v=Ad5DvbHMHTo
 ```
-
-
 
 ## Cómo compilar
 
