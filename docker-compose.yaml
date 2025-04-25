@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  youtube-downloader:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./input:/app/input  # Montar la carpeta local ./input en /app/input dentro del contenedor
+      - ./output:/app/output  # Montar la carpeta local ./output en /app/output dentro del contenedor
+    stdin_open: true
+    tty: true
