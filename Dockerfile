@@ -1,5 +1,5 @@
 # Usar una imagen base de Python en Alpine Linux (ligera)
-FROM python:3.9-alpine
+FROM python:3.10-alpine
 
 # Establecer el directorio de trabajo dentro del contenedor
 WORKDIR /app
@@ -21,6 +21,9 @@ RUN apk add --no-cache \
 
 # Instalar las dependencias de Python
 RUN pip install --no-cache-dir yt-dlp pydub
+# Asegurarse de que yt-dlp esté actualizado
+RUN pip install --no-cache-dir --upgrade yt-dlp
 
 # Comando para ejecutar el script
-CMD ["python", "youtube_audio_downloader.py"]
+# CMD ["python", "youtube_audio_downloader.py"]
+CMD ["python", "youtube_video_downloader_720.py"]
