@@ -24,7 +24,7 @@ def descargar_video(link, output_path="/app/output"):
         print(f"Error al descargar el video: {e}")
 
 if __name__ == "__main__":
-    input_file = "/app/input/input.txt"
+    input_file = "/app/input/input_videos.txt"  # Cambiar la ruta del archivo de entrada para usar input_videos.txt
     output_dir = "/app/output"
 
     if not os.path.exists(input_file):

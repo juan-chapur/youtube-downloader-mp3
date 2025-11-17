@@ -11,8 +11,7 @@ COPY . /app
 RUN mkdir -p /app/input /app/output
 
 # Instalar las dependencias del sistema necesarias para ffmpeg y Python
-RUN apk add --no-cache \
-    ffmpeg \
+RUN apk add ffmpeg \
     bash \
     gcc \
     musl-dev \
@@ -20,10 +19,7 @@ RUN apk add --no-cache \
     python3-dev
 
 # Instalar las dependencias de Python
-RUN pip install --no-cache-dir yt-dlp pydub
-# Asegurarse de que yt-dlp esté actualizado
-RUN pip install --no-cache-dir --upgrade yt-dlp
+RUN pip install yt-dlp pydub
 
-# Comando para ejecutar el script
-# CMD ["python", "youtube_audio_downloader.py"]
-CMD ["python", "youtube_video_downloader_720.py"]
+# Cambiar el comando CMD para ejecutar el gestor
+CMD ["python", "run_manager.py"]

@@ -62,7 +62,7 @@ def convertir_a_mp3(input_file, title):
         print(f"Error al convertir el archivo a MP3: {e}")
 
 if __name__ == "__main__":
-    input_file = "/app/input/input.txt"  # Ruta al archivo de texto con enlaces
+    input_file = "/app/input/input_audios.txt"  # Ruta al archivo de texto con enlaces
     if not os.path.exists(input_file):
         print(f"Archivo de entrada no encontrado: {input_file}")
         exit(1)
