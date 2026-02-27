@@ -4,8 +4,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    ports:
+      - "8000:8000"  # Exponer el puerto 8000 para acceder a Django
     volumes:
       - ./input:/app/input  # Montar la carpeta local ./input en /app/input dentro del contenedor
       - ./output:/app/output  # Montar la carpeta local ./output en /app/output dentro del contenedor
     stdin_open: true
     tty: true
+    environment:
+      - DJANGO_SETTINGS_MODULE=youtube_downloader_project.settings

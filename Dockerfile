@@ -1,8 +1,19 @@
-# Usar una imagen base de Python en Alpine Linux (ligera)
-FROM python:3.10-alpine
+# Usar una imagen base de Python
+FROM python:3.10-slim
 
 # Establecer el directorio de trabajo dentro del contenedor
 WORKDIR /app
+
+# Copiar requirements primero para aprovechar cache de Docker
+COPY requirements.txt /app/
+
+# Instalar las dependencias del sistema necesarias para ffmpeg
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Instalar las dependencias de Python
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copiar los archivos del proyecto al contenedor
 COPY . /app
@@ -10,16 +21,12 @@ COPY . /app
 # Crear los directorios de entrada y salida
 RUN mkdir -p /app/input /app/output
 
-# Instalar las dependencias del sistema necesarias para ffmpeg y Python
-RUN apk add ffmpeg \
-    bash \
-    gcc \
-    musl-dev \
-    libffi-dev \
-    python3-dev
+# Ejecutar migraciones y colectar archivos estáticos
+RUN python manage.py migrate --noinput
+RUN python manage.py collectstatic --noinput --clear || true
 
-# Instalar las dependencias de Python
-RUN pip install yt-dlp pydub
+# Exponer el puerto 8000
+EXPOSE 8000
 
-# Cambiar el comando CMD para ejecutar el gestor
-CMD ["python", "run_manager.py"]
+# Comando para iniciar el servidor Django
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

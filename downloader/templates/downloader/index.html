@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Downloader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #00d9ff;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            text-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #a0a0a0;
+            margin-bottom: 40px;
+            font-size: 1rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #00d9ff;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .type-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .type-option {
+            flex: 1;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(0, 217, 255, 0.3);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .type-option:hover {
+            background: rgba(0, 217, 255, 0.1);
+            border-color: #00d9ff;
+            transform: translateY(-2px);
+        }
+
+        .type-option.active {
+            background: rgba(0, 217, 255, 0.2);
+            border-color: #00d9ff;
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+        }
+
+        .type-option input[type="radio"] {
+            display: none;
+        }
+
+        .type-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(0, 217, 255, 0.3);
+            border-radius: 10px;
+            color: #e0e0e0;
+            font-size: 1rem;
+            resize: vertical;
+            font-family: 'Consolas', monospace;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #00d9ff;
+            box-shadow: 0 0 15px rgba(0, 217, 255, 0.3);
+        }
+
+        textarea::placeholder {
+            color: #666;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #00d9ff;
+        }
+
+        .checkbox-label {
+            color: #e0e0e0;
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #00d9ff 0%, #0099cc 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #444;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-container {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            border: 2px solid rgba(0, 217, 255, 0.3);
+            display: none;
+        }
+
+        .status-container.show {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d9ff 0%, #00ffaa 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .status-text {
+            color: #00d9ff;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .files-list {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        .file-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: rgba(0, 217, 255, 0.1);
+            border-radius: 5px;
+            color: #00ffaa;
+        }
+
+        .error {
+            color: #ff4444;
+            background: rgba(255, 68, 68, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .success {
+            color: #00ffaa;
+            background: rgba(0, 255, 170, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .info-text {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .download-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #00ffaa 0%, #00cc88 100%);
+            color: #1a1a2e;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 170, 0.4);
+        }
+
+        .download-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(0, 217, 255, 0.05);
+            border-radius: 15px;
+            border: 2px solid rgba(0, 217, 255, 0.2);
+        }
+
+        .download-section h3 {
+            color: #00d9ff;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .file-download-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            margin: 8px 0;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border: 1px solid rgba(0, 217, 255, 0.2);
+        }
+
+        .file-info {
+            flex: 1;
+            color: #e0e0e0;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #00ffaa;
+        }
+
+        .file-size {
+            font-size: 0.85rem;
+            color: #a0a0a0;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 YouTube Downloader</h1>
+        <p class="subtitle">Descarga videos y audios de YouTube de forma rápida y sencilla</p>
+
+        <div class="card">
+            <form id="downloadForm">
+                <div class="form-group">
+                    <label>Tipo de descarga</label>
+                    <div class="type-selector">
+                        <div class="type-option active" onclick="selectType('audio')">
+                            <input type="radio" name="type" value="audio" checked>
+                            <div class="type-icon">🎵</div>
+                            <div>Audio (MP3)</div>
+                        </div>
+                        <div class="type-option" onclick="selectType('video')">
+                            <input type="radio" name="type" value="video">
+                            <div class="type-icon">🎥</div>
+                            <div>Video (MP4)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="links">Links de YouTube</label>
+                    <textarea 
+                        id="links" 
+                        name="links" 
+                        placeholder="Pega uno o más links de YouTube aquí (uno por línea)&#10;&#10;Ejemplos:&#10;Video: https://www.youtube.com/watch?v=dQw4w9WgXcQ&#10;Playlist: https://www.youtube.com/playlist?list=PL6XxDHNrEjk4..."
+                        required
+                    ></textarea>
+                    <p class="info-text">✨ Soporta videos individuales y playlists completas. Las playlists se expandirán automáticamente.</p>
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="merge" name="merge">
+                        <label for="merge" class="checkbox-label">
+                            Unir todos los archivos en uno solo
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn" id="downloadBtn">
+                    Iniciar Descarga
+                </button>
+            </form>
+
+            <div class="status-container" id="statusContainer">
+                <div class="status-text" id="statusText">Procesando...</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill">0%</div>
+                </div>
+                <div class="files-list" id="filesList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTaskId = null;
+        let statusInterval = null;
+
+        function selectType(type) {
+            document.querySelectorAll('.type-option').forEach(opt => {
+                opt.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            document.querySelector(`input[value="${type}"]`).checked = true;
+        }
+
+        document.getElementById('downloadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const type = document.querySelector('input[name="type"]:checked').value;
+            const linksText = document.getElementById('links').value;
+            const merge = document.getElementById('merge').checked;
+
+            // Procesar links
+            const links = linksText.split('\n')
+                .map(link => link.trim())
+                .filter(link => link.length > 0);
+
+            if (links.length === 0) {
+                alert('Por favor, ingresa al menos un link');
+                return;
+            }
+
+            // Deshabilitar botón
+            const btn = document.getElementById('downloadBtn');
+            btn.disabled = true;
+            btn.textContent = 'Procesando...';
+
+            // Mostrar contenedor de estado
+            const statusContainer = document.getElementById('statusContainer');
+            statusContainer.classList.add('show');
+
+            try {
+                const response = await fetch('/download/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        type: type,
+                        links: links,
+                        merge: merge,
+                        output_folder: 'output'  // Siempre usar 'output' por defecto
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentTaskId = data.task_id;
+                    checkStatus();
+                } else {
+                    showError(data.error || 'Error al iniciar descarga');
+                    btn.disabled = false;
+                    btn.textContent = 'Iniciar Descarga';
+                }
+            } catch (error) {
+                showError('Error de conexión: ' + error.message);
+                btn.disabled = false;
+                btn.textContent = 'Iniciar Descarga';
+            }
+        });
+
+        async function checkStatus() {
+            if (!currentTaskId) return;
+
+            try {
+                const response = await fetch(`/status/${currentTaskId}/`);
+                const data = await response.json();
+
+                updateProgress(data);
+
+                if (data.status === 'completed') {
+                    await showSuccess(data);
+                    resetForm();
+                } else if (data.status === 'error') {
+                    showError(data.error || 'Error desconocido');
+                    resetForm();
+                } else {
+                    // Continuar verificando
+                    setTimeout(checkStatus, 1000);
+                }
+            } catch (error) {
+                showError('Error al verificar estado: ' + error.message);
+                resetForm();
+            }
+        }
+
+        function updateProgress(data) {
+            const statusText = document.getElementById('statusText');
+            const progressFill = document.getElementById('progressFill');
+            const filesList = document.getElementById('filesList');
+
+            if (data.status === 'merging') {
+                statusText.textContent = 'Uniendo archivos...';
+            } else {
+                statusText.textContent = `Descargando ${data.current}/${data.total}...`;
+                
+                // Mostrar si se expandió una playlist
+                if (data.playlist_expanded && data.current === 1) {
+                    statusText.innerHTML = `<div style="color: #00ffaa; margin-bottom: 10px;">📋 Playlist detectada y expandida: ${data.total} videos encontrados</div>Descargando ${data.current}/${data.total}...`;
+                }
+            }
+
+            progressFill.style.width = data.progress + '%';
+            progressFill.textContent = data.progress + '%';
+
+            if (data.files && data.files.length > 0) {
+                let header = '<strong>Archivos descargados:</strong>';
+                if (data.playlist_expanded) {
+                    header = '<strong>Archivos descargados (de playlist):</strong>';
+                }
+                filesList.innerHTML = header + '<br>' +
+                    data.files.map(file => `<div class="file-item">✓ ${file}</div>`).join('');
+            }
+        }
+
+        async function showSuccess(data) {
+            const filesList = document.getElementById('filesList');
+            let message = `<div class="success">✓ Descarga completada exitosamente</div>`;
+            
+            if (data.merged_file) {
+                message += `<div class="file-item">📦 Archivo combinado: ${data.merged_file}</div>`;
+            }
+
+            filesList.innerHTML = message;
+
+            // Cargar archivos disponibles para descarga
+            const outputFolder = 'output';  // Siempre usar output
+            try {
+                const response = await fetch(`/files/?folder=${outputFolder}`);
+                const filesData = await response.json();
+                
+                if (filesData.files && filesData.files.length > 0) {
+                    let downloadSection = '<div class="download-section">';
+                    downloadSection += '<h3>📥 Descargar archivos</h3>';
+                    
+                    filesData.files.forEach(file => {
+                        downloadSection += `
+                            <div class="file-download-item">
+                                <div class="file-info">
+                                    <span class="file-name">${file.name}</span>
+                                    <span class="file-size">(${file.size} MB)</span>
+                                </div>
+                                <a href="/files/download/${file.name}/?folder=${file.folder}" 
+                                   class="download-btn" 
+                                   download="${file.name}">
+                                    ⬇️ Descargar
+                                </a>
+                            </div>
+                        `;
+                    });
+                    
+                    downloadSection += '</div>';
+                    filesList.innerHTML += downloadSection;
+                }
+            } catch (error) {
+                console.error('Error al cargar archivos:', error);
+            }
+        }
+
+        function showError(message) {
+            const filesList = document.getElementById('filesList');
+            filesList.innerHTML = `<div class="error">❌ Error: ${message}</div>`;
+        }
+
+        function resetForm() {
+            const btn = document.getElementById('downloadBtn');
+            btn.disabled = false;
+            btn.textContent = 'Iniciar Descarga';
+            currentTaskId = null;
+        }
+    </script>
+</body>
+</html>
