@@ -17,6 +17,11 @@ def index(request):
     return render(request, 'downloader/index.html')
 
 
+def library(request):
+    """Vista de biblioteca con archivos descargados y en progreso"""
+    return render(request, 'downloader/library.html')
+
+
 @csrf_exempt
 def get_playlist_videos(request):
     """Obtiene información de videos de una playlist"""
@@ -222,3 +227,47 @@ def download_file(request, filename):
     response = FileResponse(open(file_path, 'rb'), content_type=mime_type)
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
+
+
+def library_status(request):
+    """Devuelve el estado de todas las descargas activas y archivos disponibles"""
+    try:
+        # Obtener archivos descargados
+        output_folder = 'output'
+        files = []
+        if os.path.exists(output_folder):
+            for filename in os.listdir(output_folder):
+                filepath = os.path.join(output_folder, filename)
+                if os.path.isfile(filepath) and (filename.endswith('.mp3') or filename.endswith('.mp4')):
+                    size = os.path.getsize(filepath)
+                    size_mb = round(size / (1024 * 1024), 2)
+                    files.append({
+                        'name': filename,
+                        'size': size_mb,
+                        'folder': output_folder,
+                        'status': 'completed'
+                    })
+        
+        # Obtener descargas activas
+        active_downloads = []
+        for task_id, task_data in download_tasks.items():
+            if task_data['status'] in ['processing', 'merging']:
+                download_info = {
+                    'task_id': task_id,
+                    'status': task_data['status'],
+                    'progress': task_data['progress'],
+                    'current': task_data['current'],
+                    'total': task_data['total'],
+                    'expected_files': task_data.get('expected_files', []),
+                    'files': task_data.get('files', [])
+                }
+                active_downloads.append(download_info)
+        
+        return JsonResponse({
+            'files': files,
+            'active_downloads': active_downloads,
+            'total_files': len(files),
+            'active_count': len(active_downloads)
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

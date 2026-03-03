@@ -633,6 +633,32 @@
             }
         }
 
+        /* Estilos para navegación a biblioteca */
+        .library-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: rgba(0, 217, 255, 0.1);
+            border: 2px solid rgba(0, 217, 255, 0.3);
+            border-radius: 10px;
+            color: #00d9ff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 0 auto;
+            display: block;
+            width: fit-content;
+            margin-bottom: 30px;
+        }
+
+        .library-link:hover {
+            background: rgba(0, 217, 255, 0.2);
+            border-color: #00d9ff;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 217, 255, 0.3);
+        }
+
         @media (max-width: 480px) {
             h1 {
                 font-size: 1.5rem;
@@ -660,6 +686,10 @@
     <div class="container">
         <h1>🎬 YouTube Downloader</h1>
         <p class="subtitle">Descarga videos y audios de YouTube de forma rápida y sencilla</p>
+        
+        <a href="/library/" class="library-link">
+            <span>📚</span> Ver Biblioteca
+        </a>
 
         <div class="card">
             <form id="downloadForm">
