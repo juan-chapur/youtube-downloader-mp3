@@ -6,7 +6,7 @@ import os
 import threading
 import uuid
 import mimetypes
-from .utils import download_audio, download_video, merge_audio_files, merge_video_files, process_links
+from .utils import download_audio, download_video, merge_audio_files, merge_video_files, process_links, is_playlist, get_playlist_info, get_expected_filename
 
 # Almacenamiento en memoria de tareas
 download_tasks = {}
@@ -15,6 +15,36 @@ download_tasks = {}
 def index(request):
     """Vista principal con el formulario"""
     return render(request, 'downloader/index.html')
+
+
+@csrf_exempt
+def get_playlist_videos(request):
+    """Obtiene información de videos de una playlist"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        url = data.get('url', '')
+        
+        if not url:
+            return JsonResponse({'error': 'URL no proporcionada'}, status=400)
+        
+        if not is_playlist(url):
+            return JsonResponse({'error': 'La URL no es una playlist'}, status=400)
+        
+        videos = get_playlist_info(url)
+        
+        if not videos:
+            return JsonResponse({'error': 'No se encontraron videos en la playlist'}, status=404)
+        
+        return JsonResponse({
+            'videos': videos,
+            'total': len(videos)
+        })
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 @csrf_exempt
@@ -45,6 +75,16 @@ def download(request):
         if not expanded_links:
             return JsonResponse({'error': 'No se pudieron procesar los links'}, status=400)
         
+        # Obtener nombres esperados de archivos
+        expected_files = []
+        for link in expanded_links:
+            filename = get_expected_filename(link, download_type, output_folder)
+            expected_files.append({
+                'name': filename,
+                'status': 'pending',  # pending, downloading, completed
+                'url': link
+            })
+        
         # Inicializar estado de la tarea
         download_tasks[task_id] = {
             'status': 'processing',
@@ -52,6 +92,7 @@ def download(request):
             'total': len(expanded_links),
             'current': 0,
             'files': [],
+            'expected_files': expected_files,  # Lista completa de archivos esperados
             'error': None,
             'merged_file': None,
             'playlist_expanded': len(expanded_links) > len(links),
@@ -67,7 +108,9 @@ def download(request):
         
         return JsonResponse({
             'task_id': task_id,
-            'message': 'Descarga iniciada'
+            'message': 'Descarga iniciada',
+            'expected_files': expected_files,  # Incluir en respuesta inicial
+            'total': len(expanded_links)
         })
         
     except Exception as e:
@@ -93,6 +136,10 @@ def process_download(task_id, download_type, links, merge, output_dir='output'):
             download_tasks[task_id]['current'] = i + 1
             download_tasks[task_id]['progress'] = int((i + 1) / len(links) * 100)
             
+            # Marcar archivo actual como "downloading"
+            if 'expected_files' in download_tasks[task_id]:
+                download_tasks[task_id]['expected_files'][i]['status'] = 'downloading'
+            
             try:
                 if download_type == 'audio':
                     file_path = download_audio(link, output_dir)
@@ -101,9 +148,18 @@ def process_download(task_id, download_type, links, merge, output_dir='output'):
                 
                 if file_path:
                     downloaded_files.append(file_path)
-                    download_tasks[task_id]['files'].append(os.path.basename(file_path))
+                    filename = os.path.basename(file_path)
+                    download_tasks[task_id]['files'].append(filename)
+                    
+                    # Marcar archivo como "completed"
+                    if 'expected_files' in download_tasks[task_id]:
+                        download_tasks[task_id]['expected_files'][i]['status'] = 'completed'
+                        download_tasks[task_id]['expected_files'][i]['downloaded_name'] = filename
             except Exception as e:
                 print(f"Error descargando {link}: {e}")
+                # Marcar archivo como "error"
+                if 'expected_files' in download_tasks[task_id]:
+                    download_tasks[task_id]['expected_files'][i]['status'] = 'error'
         
         # Si se deben unir los archivos
         if merge and len(downloaded_files) > 1:

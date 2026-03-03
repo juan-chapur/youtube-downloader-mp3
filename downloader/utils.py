@@ -5,6 +5,34 @@ from datetime import datetime
 import re
 
 
+def get_expected_filename(url, download_type='audio', output_dir='output'):
+    """Obtiene el nombre esperado del archivo sin descargarlo"""
+    try:
+        ydl_opts = {
+            'quiet': True,
+            'no_warnings': True,
+            'skip_download': True,
+        }
+        
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            title = info.get('title', 'video')
+            
+            # Limpiar el título de caracteres no válidos
+            title = re.sub(r'[<>:"/\\|?*]', '', title)
+            
+            # Agregar la extensión según el tipo
+            if download_type == 'audio':
+                filename = f"{title}.mp3"
+            else:
+                filename = f"{title}.mp4"
+            
+            return filename
+    except Exception as e:
+        print(f"Error obteniendo nombre de archivo: {e}")
+        return f"archivo_{download_type}.{'mp3' if download_type == 'audio' else 'mp4'}"
+
+
 def download_audio(url, output_dir='output'):
     """Descarga audio de YouTube"""
     try:
@@ -178,6 +206,44 @@ def expand_playlist(url):
             
     except Exception as e:
         print(f"Error al expandir playlist: {e}")
+        return []
+
+
+def get_playlist_info(url):
+    """
+    Obtiene información detallada de cada video en una playlist
+    Retorna una lista de diccionarios con info de cada video
+    """
+    try:
+        ydl_opts = {
+            'quiet': True,
+            'extract_flat': 'in_playlist',
+            'force_generic_extractor': False,
+        }
+        
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            
+            if 'entries' not in info:
+                return []
+            
+            videos = []
+            for idx, entry in enumerate(info['entries']):
+                if entry:
+                    video_info = {
+                        'id': entry.get('id', ''),
+                        'url': f"https://www.youtube.com/watch?v={entry.get('id', '')}",
+                        'title': entry.get('title', 'Sin título'),
+                        'duration': entry.get('duration', 0),
+                        'thumbnail': entry.get('thumbnail', entry.get('thumbnails', [{}])[0].get('url', '')),
+                        'index': idx + 1
+                    }
+                    videos.append(video_info)
+            
+            return videos
+            
+    except Exception as e:
+        print(f"Error al obtener info de playlist: {e}")
         return []
 
 

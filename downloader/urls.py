@@ -5,6 +5,7 @@ app_name = 'downloader'
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('playlist/info/', views.get_playlist_videos, name='playlist_info'),
     path('download/', views.download, name='download'),
     path('status/<str:task_id>/', views.download_status, name='download_status'),
     path('files/', views.list_files, name='list_files'),
